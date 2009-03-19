@@ -67,12 +67,16 @@ class GrouperTest < Test::Unit::TestCase
     assert ! g.only_off_by_1([[0,1,2]],[0,1,3])
   end
 
-  def test_permute_with_10_C_2
+  def xxxtest_permute_with_10_C_2
     g = Grouper.new(10, 2)
     g.apply_rules
   end
 
   def test_permutation_of_2
+    g = Grouper.new(3, 2)
+    g.apply_rules
+    g = Grouper.new(4, 2)
+    g.apply_rules
     g = Grouper.new(5, 2)
     g.apply_rules
     g = Grouper.new(6, 2)
@@ -91,8 +95,6 @@ class GrouperTest < Test::Unit::TestCase
 
   def test_permutation_of_3
     g = Grouper.new(5, 3)
-    g.apply_rules
-    g = Grouper.new(5, 2)
     g.apply_rules
     g = Grouper.new(7, 3)
     g.apply_rules

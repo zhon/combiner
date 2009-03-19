@@ -28,10 +28,10 @@ class Grouper
     list
   end
 
-  def another_pairing(list)
+  def another_pairing(list, n=@n)
     result = []
     list.each do |i|
-      ((i.max+1)...@n).each do |j|
+      ((i.max+1)...n).each do |j|
         result.push(i.dup.push(j))
       end
     end
@@ -80,10 +80,55 @@ class Grouper
   end
 
   def apply_rules
+    result_set = []
+    extra_set = combine_indexes
+
+    while result_set.size < @n
+      endless_loop = true
+      i = 0
+      while (i < extra_set.size)
+        if only_off_by_1(result_set, extra_set[i])
+          result_set.push(extra_set.delete_at(i))
+          endless_loop = false
+        end
+        i += 1
+      end
+      if endless_loop 
+        # take out k-1 and find k to put back in
+        (@k-1).times { extra_set.push result_set.shift }
+
+        extra_set_indexes = (0...extra_set.size).to_a.map {|i| [i] }
+
+        (1...@k).each do                # TODO remove this duplication
+          extra_set_indexes = 
+            another_pairing(extra_set_indexes, extra_set.size)
+        end
+
+        extra_set_indexes.each do |i|
+          items = i.map {|j| extra_set[j] }
+
+          if only_off_by_1(result_set, items)
+            result_set << items
+            endless_loop = false
+          end
+        end
+
+puts "#@n C #@k"
+p result_set
+p extra_set
+      end
+
+      break if endless_loop
+
+    end
+    return result_set
+  end
+
+  def xxxapply_rules
     result = combine_indexes
 
     solved = false
-    100.times do
+    10.times do
       if _permute(1...result.size, result) 
         solved = true
         #puts "solved #@n P #@k by radomizing"
@@ -133,59 +178,6 @@ p "restarting #{@start_value}"
             end
           end
           raise "shouldn't be here"
-=begin
-unless back_index
-hash = off_by_1_hash
-(result[0...i]).flatten.each do |i|
-  hash[i] ||= 0
-  hash[i] += 1
-end
-ph hash
-p result
-p "No back_index found in #{@n}C#@k at #{i}" 
-end
-=end
-=begin
-          unless back_index
-            hash = off_by_1_hash
-            (result[0...i]).flatten.each do |j|
-              hash[j] += 1
-            end
-            puts
-            ph hash
-            print "#{i}=>"
-            p result[i]
-            p result[0...i]
-            puts
-            p result[i...result.size]
-            raise "Impossible backup for #{@n}C#@k at #{i}"
-          end
-          raise "Impossible backup for #{@n}C#@k at #{i}" unless back_index
-          # look for a replace ment for back_index
-          (i...result.size).each do |j|
-            if only_off_by_1(result[0...back_index], 
-                             result[(back_index+1)...i],
-                             result[j])
-              back_index = j
-              swap result, back_index, j
-p "swapping back #{back_index},#{j}"
-              throw :continue
-            end
-          end
-=end
-          
-=begin
-hash = {}
-(result[0...i]).flatten.each do |i|
-  hash[i] ||= 0
-  hash[i] += 1
-end
-p hash
-#p result[i]
-#p result
-p "boom for #@n" 
-return result
-=end
         end
       end
     end
@@ -307,114 +299,4 @@ end
 def print_groups(g)
   g.each {|i| p i }
 end
-
-=begin
-groupings = all_groups(people, group_size)
-print_groups groupings
-
-puts '-----------'
-
-p combine(groupings, people)
-print_groups(combine(groupings, people))
-=end
-
-
-
-
-=begin
-def combine(groupings, people)
-  results = []
-
-  working = groupings.dup
-  scratch = []
-
-
-  back_track = false
-  while not working.empty?
-    line = working.shift
-    if only_off_by_1(results, line, people)
-      results.push(line)
-      back_track = false
-    else
-      scratch.push line
-      if working.empty?
-        if back_track
-          scratch.push results.pop
-          back_track = false
-        else
-          back_track = true
-        end
-      end
-    end
-    if working.empty?
-      if back_track
-        scratch.push results.pop
-        back_track = false
-      else
-        back_track = true
-      end
-      working = scratch
-      scratch = []
-    end
-
-    raise "unable to solve" if results.empty?
-    sleep 0.5
-print 'R: '
-p results
-print 's: '
-p scratch
-print 'w: '
-p working
- =begin
- =end
-  end
-  results
-
-end
-=end
-
-=begin
-def combine(g, all)
-  results = nil
-  while 1
-    results = []
-    #scratch = g.sort { rand * 3 - 2 }
-    scratch = g.sort {|a,b|  b[0] <=> a[0]+1}
-p scratch
-    count = 1
-    while not scratch.empty?
-      line = scratch.shift
-      if only_off_by_1(results, line, all)
-        results.push(line)
-      else
-        scratch.push line
-        count += 1
-        if count == 10
-          break
-        end
-      end
-    #  puts 'line'
-    #  p line
-    #  puts "scratch"
-    #  print_groups scratch
-    #  puts "results"
-    #  print_groups results
-    #  sleep 0.5
-    end
-    break if scratch.empty?
-  end
-  results
-end
-=end
-=begin
-  def binom(n, k)
-    return 1 if ( k ==0 ) || (n== k)
-
- puts "(#{n}, #{k})"
-
-    n1 = binom( n - 1, k)
-    n2 = binom( n - 1, k - 1)
-    return n1 + n2
-  end
-=end
 
